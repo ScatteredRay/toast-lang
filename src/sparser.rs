@@ -25,13 +25,18 @@ impl State<'_> {
 }
 
 #[derive(Debug, PartialEq)]
-enum Token {
+enum TokenType {
     OpenParen,
     CloseParen,
     Symbol,
     Number,
     Unknown,
     End
+}
+
+
+pub struct Token {
+    token_type: TokenType,
 }
 
 pub fn consume_whitespace(state: &mut State) {
@@ -49,11 +54,11 @@ pub fn parse_token(state: &mut State) -> Token {
     let tok = match c {
         Some('(') => {
                 state.inc();
-                Token::OpenParen
+                Token { token_type: TokenType::OpenParen }
         },
         Some(')') => {
             state.inc();
-            Token::CloseParen
+            Token { token_type: TokenType::CloseParen }
         },
         Some('0'..='9') => {
             while match state.peek() {
@@ -62,10 +67,10 @@ pub fn parse_token(state: &mut State) -> Token {
             }  {
                 state.inc();
             }
-            Token::Number
+            Token { token_type: TokenType::Number }
         },
-        None => Token::End,
-        _ => Token::Unknown
+        None => Token { token_type: TokenType::End },
+        _ => Token { token_type: TokenType::Unknown }
     };
     return tok;
 }
@@ -82,42 +87,42 @@ mod tests {
     #[test]
     fn token() {
         assert_eq!(sparser::parse_token(
-                &mut sparser::State { s : "(", offset : 0}),
-                   sparser::Token::OpenParen);
+                &mut sparser::State { s : "(", offset : 0}).token_type,
+                   sparser::TokenType::OpenParen);
 
         assert_eq!(sparser::parse_token(
-                &mut sparser::State { s : ")", offset : 0}),
-                   sparser::Token::CloseParen);
+                &mut sparser::State { s : ")", offset : 0}).token_type,
+                   sparser::TokenType::CloseParen);
 
         assert_eq!(sparser::parse_token(
-                &mut sparser::State { s : "", offset : 0}),
-                   sparser::Token::End);
+                &mut sparser::State { s : "", offset : 0}).token_type,
+                   sparser::TokenType::End);
 
         assert_eq!(sparser::parse_token(
-                &mut sparser::State { s : " (", offset : 0}),
-                   sparser::Token::OpenParen);
+                &mut sparser::State { s : " (", offset : 0}).token_type,
+                   sparser::TokenType::OpenParen);
 
         assert_eq!(sparser::parse_token(
-                &mut sparser::State { s : "0", offset : 0}),
-                   sparser::Token::Number);
+                &mut sparser::State { s : "0", offset : 0}).token_type,
+                   sparser::TokenType::Number);
 
         assert_eq!(sparser::parse_token(
-                &mut sparser::State { s : "1", offset : 0}),
-                   sparser::Token::Number);
+                &mut sparser::State { s : "1", offset : 0}).token_type,
+                   sparser::TokenType::Number);
 
         assert_eq!(sparser::parse_token(
-                &mut sparser::State { s : "9", offset : 0}),
-                   sparser::Token::Number);
+                &mut sparser::State { s : "9", offset : 0}).token_type,
+                   sparser::TokenType::Number);
 
         let mut state = sparser::State {
             s : " ( 987 )( ",
             offset : 0
         };
-        assert_eq!(sparser::parse_token(&mut state), sparser::Token::OpenParen);
-        assert_eq!(sparser::parse_token(&mut state), sparser::Token::Number);
-        assert_eq!(sparser::parse_token(&mut state), sparser::Token::CloseParen);
-        assert_eq!(sparser::parse_token(&mut state), sparser::Token::OpenParen);
-        assert_eq!(sparser::parse_token(&mut state), sparser::Token::End);
+        assert_eq!(sparser::parse_token(&mut state).token_type, sparser::TokenType::OpenParen);
+        assert_eq!(sparser::parse_token(&mut state).token_type, sparser::TokenType::Number);
+        assert_eq!(sparser::parse_token(&mut state).token_type, sparser::TokenType::CloseParen);
+        assert_eq!(sparser::parse_token(&mut state).token_type, sparser::TokenType::OpenParen);
+        assert_eq!(sparser::parse_token(&mut state).token_type, sparser::TokenType::End);
     }
 
     #[test]
