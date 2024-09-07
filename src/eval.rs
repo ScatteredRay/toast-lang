@@ -28,8 +28,10 @@ pub fn eval_tree() -> i32 {
     let block = fbuilder.create_block();
     fbuilder.switch_to_block(block);
     fbuilder.append_block_params_for_function_params(block);
-    let a = fbuilder.ins().iconst(types::I32, 4);
-    fbuilder.ins().return_(&[a]);
+    let a = fbuilder.ins().iconst(types::I32, 2);
+    let b = fbuilder.ins().iconst(types::I32, 3);
+    let r = fbuilder.ins().iadd(a, b);
+    fbuilder.ins().return_(&[r]);
     fbuilder.seal_all_blocks();
     fbuilder.finalize();
 
@@ -47,7 +49,6 @@ pub fn eval_tree() -> i32 {
 mod tests {
     #[test]
     fn basic_math() {
-        assert_eq!(2, 2);
-        assert_eq!(crate::eval::eval_tree(), 4);
+        assert_eq!(crate::eval::eval_tree(), 5);
     }
 }
