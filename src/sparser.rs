@@ -29,6 +29,7 @@ enum Token {
     OpenParen,
     CloseParen,
     Symbol,
+    Number,
     Unknown,
     End
 }
@@ -53,6 +54,15 @@ pub fn parse_token(state: &mut State) -> Token {
         Some(')') => {
             state.inc();
             Token::CloseParen
+        },
+        Some('0'..='9') => {
+            while match state.peek() {
+                Some('0'..='9') => true,
+                _ => false
+            }  {
+                state.inc();
+            }
+            Token::Number
         },
         None => Token::End,
         _ => Token::Unknown
@@ -87,11 +97,24 @@ mod tests {
                 &mut sparser::State { s : " (", offset : 0}),
                    sparser::Token::OpenParen);
 
+        assert_eq!(sparser::parse_token(
+                &mut sparser::State { s : "0", offset : 0}),
+                   sparser::Token::Number);
+
+        assert_eq!(sparser::parse_token(
+                &mut sparser::State { s : "1", offset : 0}),
+                   sparser::Token::Number);
+
+        assert_eq!(sparser::parse_token(
+                &mut sparser::State { s : "9", offset : 0}),
+                   sparser::Token::Number);
+
         let mut state = sparser::State {
-            s : " ( )( ",
+            s : " ( 987 )( ",
             offset : 0
         };
         assert_eq!(sparser::parse_token(&mut state), sparser::Token::OpenParen);
+        assert_eq!(sparser::parse_token(&mut state), sparser::Token::Number);
         assert_eq!(sparser::parse_token(&mut state), sparser::Token::CloseParen);
         assert_eq!(sparser::parse_token(&mut state), sparser::Token::OpenParen);
         assert_eq!(sparser::parse_token(&mut state), sparser::Token::End);
